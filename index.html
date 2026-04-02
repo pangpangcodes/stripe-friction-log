@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Stripe Checkout Friction Log - Monica Pang</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; color: #1a1a2e; line-height: 1.6; max-width: 960px; margin: 0 auto; padding: 40px 24px; }
+  h1 { font-size: 28px; margin-bottom: 4px; }
+  h2 { font-size: 22px; margin-top: 48px; margin-bottom: 16px; border-bottom: 2px solid #635bff; padding-bottom: 8px; }
+  h3 { font-size: 17px; margin-top: 24px; margin-bottom: 12px; color: #635bff; }
+  .meta { color: #666; font-size: 14px; margin-bottom: 32px; }
+  .context { background: #f7f7fb; border-radius: 8px; padding: 24px; margin-bottom: 32px; }
+  .context p { margin-bottom: 12px; }
+  .context p:last-child { margin-bottom: 0; }
+  a { color: #635bff; }
+  ul { padding-left: 20px; list-style: disc; }
+  li { margin-bottom: 12px; }
+  li > strong:first-child { margin-bottom: 2px; }
+  li strong { font-size: inherit; }
+  .ref { color: #999; font-size: 13px; font-style: italic; }
+  table { width: 100%; border-collapse: collapse; margin: 16px 0 32px; font-size: 14px; }
+  th { background: #f0f0f5; text-align: left; padding: 10px 12px; font-weight: 600; border-bottom: 2px solid #ddd; }
+  td { padding: 10px 12px; border-bottom: 1px solid #eee; vertical-align: top; }
+  td:first-child { white-space: nowrap; font-weight: 600; color: #635bff; }
+  .p1 { background: #fff0f0; }
+  .p2 { background: #fffbf0; }
+  .p3 { background: #f0f8ff; }
+  .screenshot { margin: 32px 0; border: 1px solid #e0e0e0; border-radius: 12px; overflow: hidden; background: #fafafa; }
+  .screenshot-header { display: flex; align-items: center; gap: 12px; padding: 16px 20px; background: #f0f0f5; border-bottom: 1px solid #e0e0e0; }
+  .screenshot-num { background: #635bff; color: white; width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 14px; flex-shrink: 0; }
+  .screenshot-title { font-weight: 600; font-size: 15px; }
+  .screenshot-title a { text-decoration: none; }
+  .screenshot-img { width: 100%; display: block; }
+  .screenshot-img.placeholder { background: #f0f0f5; padding: 60px; text-align: center; color: #999; font-style: italic; }
+  .screenshot-details { padding: 16px 20px; }
+  .screenshot-details ul { list-style: none; padding-left: 0; }
+  .tag { display: inline-block; font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 4px; margin-right: 6px; vertical-align: middle; }
+  .tag-positive { background: #e6f9e6; color: #1a7a1a; }
+  .tag-friction { background: #fde8e8; color: #b91c1c; }
+  .tag-neutral { background: #f0f0f5; color: #666; }
+  .screenshot-details li { margin-bottom: 8px; font-size: 14px; }
+  .summary { background: #f7f7fb; border-radius: 8px; padding: 24px; margin-top: 32px; border-left: 4px solid #635bff; }
+  .summary p { margin-bottom: 12px; }
+  .summary p:last-child { margin-bottom: 0; }
+  hr { border: none; border-top: 1px solid #e0e0e0; margin: 40px 0; }
+</style>
+</head>
+<body>
+
+<h1>Stripe Checkout Friction Log</h1>
+<div class="meta">
+  <strong>Monica Pang</strong> | April 2, 2026<br>
+</div>
+
+<hr>
+
+<h2>Context</h2>
+<div class="context">
+  <p>I'm the founder of Llama Inc., a digital travel planning assistant that helps travellers build personalized itineraries using AI. We have users but no revenue yet. I want to find out if customers will pay $12/month for premium features - and I want the fastest path to collecting that first payment.</p>
+  <p>I have a website, I'm comfortable in a developer dashboard, but I'm not writing backend code from scratch. I chose Stripe Checkout because the <a href="https://stripe.com/en-ca/payments/checkout" target="_blank">product page</a> promised a prebuilt hosted checkout page with minimal integration.</p>
+</div>
+
+<hr>
+
+<h2>Key Findings</h2>
+
+<h3>Delights</h3>
+<ul>
+  <li><strong>Sandbox is available immediately.</strong> No business verification, no waiting period. I was exploring within minutes of creating my account.</li>
+  <li><strong>The setup guide provides a structured path.</strong> Four named steps (Choose a pricing model, Choose how to accept recurring payments, Create a recurring product, Build your Checkout integration), progress tracking with checkmarks. I didn't have to figure out the order myself.</li>
+  <li><strong>Every page Stripe hosts is excellent.</strong> The checkout page pulled my product name, price, and description automatically. The customer portal shows subscription details, invoice history, cancel button, and payment method management - all without me building anything. Klarna appeared as a payment option with no configuration.</li>
+</ul>
+
+<h3>Friction</h3>
+<ul>
+  <li><strong>I went through the entire Checkout setup, then discovered Payment Links reaches the same hosted checkout page - but I still can't tell which option is right for my use case.</strong> Payment Links is on the <a href="https://stripe.com/en-ca/payments/checkout" target="_blank">Checkout product page</a> but buried under "Other options to start accepting payments." The Checkout path involved a lot more steps, including downloading and running a sample app locally. What are the trade-offs between these options? What does each one handle, and what doesn't it? <span class="ref">(See <a href="#ss1">#1</a>, <a href="#ss13">#13</a>)</span></li>
+  <li><strong>Stripe's product pages use "has a website" as the decision point between Payment Links and Checkout - but the docs contradict that.</strong> The <a href="https://stripe.com/en-ca/payments/payment-links" target="_blank">Payment Links product page</a> describes it as a way to accept payments "without a website." I have a website, so I chose Checkout. But the <a href="https://docs.stripe.com/payment-links" target="_blank">Payment Links docs</a> say "Create a payment link and share it on social media, in emails, or <strong><em>on your website</em></strong>." So which is it - is Payment Links for people without a website, or can I use it on mine? <span class="ref">(See <a href="#ss13">#13</a>)</span></li>
+  <li><strong>The setup guide and Dashboard call it "recurring payments" but the <a href="https://docs.stripe.com/billing/subscriptions/overview" target="_blank">docs</a> call it "subscriptions" - and the inconsistency caused real confusion.</strong> The setup guide walked me through creating a recurring product. When I saw "Subscriptions" in the Dashboard sidebar, I clicked it expecting to find what I'd just created. Instead I got an empty page. The same concept has different names depending on where you are. <span class="ref">(See <a href="#ss4">#4</a>)</span></li>
+  <li><strong>"Build your Checkout integration" in the setup guide gets me to a working demo but not to a working product.</strong> The sample app runs on my laptop and I can test a payment. But "<a href="https://docs.stripe.com/billing/quickstart" target="_blank">Next steps</a>" lists subscription features (prorations, upsells) - not how to deploy the backend, connect checkout to my website, or go live. <span class="ref">(See <a href="#ss5">#5</a>)</span></li>
+  <li><strong>Business verification is a wall I didn't see coming.</strong> The onboarding and setup guide both mention it in passing, but neither says what documents are needed, how long it takes, or that it blocks going live. When I started the verification form, it asked for legal business name, registration number, business directors, address, and phone - far more than "answer some questions" implied. <span class="ref">(See <a href="#ss13">#13</a>)</span></li>
+</ul>
+
+<hr>
+
+<h2>Recommendations</h2>
+<table>
+  <tr><th>Priority</th><th>What I'd fix</th><th>Why</th><th>Evidence</th></tr>
+  <tr class="p1"><td>P1</td><td>Help users understand what each payment option handles before they choose a path</td><td>I went through the entire Checkout setup, then discovered Payment Links reaches the same hosted checkout page - but I still can't tell which option is right for my use case. The options appear in multiple places, but the descriptions don't explain what each one handles and when I'd choose one over the other.</td><td><a href="#ss1">#1</a>, <a href="#ss2">#2</a>, <a href="#ss13">#13</a></td></tr>
+  <tr class="p2"><td>P2</td><td>Add "how to go live" guidance after the sample app</td><td>"<a href="https://docs.stripe.com/billing/quickstart" target="_blank">Next steps</a>" lists subscription features, not how to deploy, connect to a website, or swap keys. The gap between working demo and live product isn't addressed.</td><td><a href="#ss5">#5</a>, <a href="#ss10">#10</a></td></tr>
+  <tr class="p2"><td>P2</td><td>Add a pre-launch checklist before the sandbox/live toggle</td><td>Business verification requires legal documents, registration numbers, and director information. "Finish your setup" doesn't convey this. I thought I was done - I wasn't.</td><td><a href="#ss11">#11</a>, <a href="#ss12">#12</a></td></tr>
+
+  <tr class="p3"><td>P3</td><td>Use consistent terminology for subscriptions</td><td>The setup guide and Dashboard say "recurring payments," the docs say "subscriptions." I clicked "Subscriptions" in the sidebar expecting to find my recurring product and got an empty page.</td><td><a href="#ss4">#4</a></td></tr>
+  <tr class="p3"><td>P3</td><td>Pre-populate the sample app with real product data</td><td>The sample app already has my API keys but shows "Starter Plan, $20.00/month" instead of my actual product. Minor, but an easy opportunity to delight - it could pull my product name and price automatically.</td><td><a href="#ss6">#6</a>, <a href="#ss8">#8</a></td></tr>
+</table>
+
+<hr>
+
+<h2>Friction Log</h2>
+
+<div class="screenshot">
+  <div class="screenshot-header" id="ss1"><div class="screenshot-num">1</div><div class="screenshot-title"><a href="https://stripe.com/en-ca/payments/checkout" target="_blank">Stripe Checkout product page</a></div></div>
+  <img class="screenshot-img" src="images/ss01_product_page.png" alt="Stripe Checkout product page">
+  <img class="screenshot-img" src="images/ss01b_other_options.png" alt="Other options to start accepting payments">
+  <div class="screenshot-details"><ul>
+    <li><span class="tag tag-positive">Delight</span>I landed on the product page. "We built Checkout so you don't have to." The hero and preview immediately showed me this is hosted by Stripe - exactly what I came to confirm.</li>
+    <li><span class="tag tag-positive">Delight</span>The product page links to a <a href="https://checkout.stripe.dev/checkout" target="_blank">checkout demo</a> with desktop and mobile previews. Although it shows a generic product, it allowed me to see what my customers might see.</li>
+    <li><span class="tag tag-friction">Friction</span>I scrolled all the way down and saw Payment Links listed as a separate product. I skimmed past it - the description didn't sound like it fit my use case. It wasn't until much later that I got confused about what each option actually handles.</li>
+  </ul></div>
+</div>
+
+<div class="screenshot">
+  <div class="screenshot-header" id="ss2"><div class="screenshot-num">2</div><div class="screenshot-title">Setup guide - "How do you want to accept recurring payments?"</div></div>
+  <img class="screenshot-img" src="images/ss08_accept_payments.png" alt="Setup guide - accept recurring payments">
+  <div class="screenshot-details"><ul>
+    <li><span class="tag tag-friction">Friction</span>I'm shown three options: shareable payment links, pre-built checkout form, and custom payment flow. I can't tell how they differ, so I selected "Pre-built checkout form" because I think that's what the demo on the Checkout product page showed me.</li>
+  </ul></div>
+</div>
+
+<div class="screenshot">
+  <div class="screenshot-header" id="ss3"><div class="screenshot-num">3</div><div class="screenshot-title">Billing overview + Watch demo</div></div>
+  <img class="screenshot-img" src="images/ss09_billing_overview.png" alt="Billing overview with Watch demo">
+  <div class="screenshot-details"><ul>
+    <li><span class="tag tag-positive">Delight</span>I landed on the Billing overview. Two setup guide steps are checked off. Progress tracking feels motivating.</li>
+    <li><span class="tag tag-positive">Delight</span>The next step was to create a recurring product - straightforward form, done in a few clicks. [Not screenshotted]</li>
+  </ul></div>
+</div>
+
+<div class="screenshot">
+  <div class="screenshot-header" id="ss4"><div class="screenshot-num">4</div><div class="screenshot-title">Docs vs Dashboard - Subscriptions terminology</div></div>
+  <img class="screenshot-img" src="images/ss04c_subscriptions_docs.png" alt="Stripe Docs - Subscriptions page">
+  <img class="screenshot-img" src="images/ss04b_subscriptions_empty.png" alt="Subscriptions page - No test subscriptions found">
+  <img class="screenshot-img" src="images/ss04_dashboard_navigation.png" alt="Product catalogue showing Premium Subscription">
+  <div class="screenshot-details"><ul>
+    <li><span class="tag tag-friction">Friction</span>The <a href="https://docs.stripe.com/billing/subscriptions/overview" target="_blank">docs</a> refer to what I'm building as "subscriptions." The Dashboard has a "Subscriptions" link in the sidebar. I clicked it expecting to find my recurring product - empty page. It was under "Product catalogue" instead, but nothing told me to look there.</li>
+  </ul></div>
+</div>
+
+<div class="screenshot">
+  <div class="screenshot-header" id="ss5"><div class="screenshot-num">5</div><div class="screenshot-title">Setup guide → <a href="https://docs.stripe.com/billing/quickstart" target="_blank">Billing quickstart</a></div></div>
+  <img class="screenshot-img" src="images/ss05_quickstart_header.png" alt="Billing quickstart header">
+  <img class="screenshot-img" src="images/ss05_quickstart_top.png" alt="Billing quickstart docs page">
+  <div class="screenshot-details"><ul>
+    <li><span class="tag tag-friction">Friction</span>I clicked "Build your Checkout integration" from the setup guide in the Dashboard and landed <a href="https://docs.stripe.com/billing/quickstart" target="_blank">here</a>. The page doesn't meet me where I am - it repeats steps I've already done, leads with server-side code with no warning that a backend is required, and doesn't let me preview the checkout page until I've downloaded and run the sample app.</li>
+  </ul></div>
+</div>
+
+<div class="screenshot">
+  <div class="screenshot-header" id="ss6"><div class="screenshot-num">6</div><div class="screenshot-title">Sample app checkout page</div></div>
+  <img class="screenshot-img" src="images/ss17_sample_app.png" alt="Sample app showing Starter Plan placeholder">
+  <div class="screenshot-details"><ul>
+    <li><span class="tag tag-friction">Friction</span>I downloaded and ran the sample app. It shows "Starter Plan, $20.00/month" with a generic icon. This is not my product. The sample already has my API keys - it could pull my actual product name and price. Instead, I'm testing with a placeholder that doesn't match the next page.</li>
+  </ul></div>
+</div>
+
+<div class="screenshot">
+  <div class="screenshot-header" id="ss7"><div class="screenshot-num">7</div><div class="screenshot-title">Stripe-hosted checkout page</div></div>
+  <img class="screenshot-img" src="images/ss18_hosted_checkout.png" alt="Stripe-hosted checkout page showing Premium Subscription">
+  <div class="screenshot-details"><ul>
+    <li><span class="tag tag-positive">Delight</span>I clicked "Checkout" and landed on the Stripe-hosted page. "Subscribe to Premium Subscription, CA$12.00 per month" with my actual description. Card and Klarna payment methods appeared automatically. "Llama Inc. sandbox" branding pulled from my account. I didn't need to set any of this up again - it pulled everything from the recurring product I already created.</li>
+    <li><span class="tag tag-neutral">Note</span>I noticed "Pay with Link" at the top - a one-click payment option I didn't know I was offering. It wasn't mentioned in any setup guide or docs. It just appeared. I don't know what it is, what it means for my customers, or how to turn it off.</li>
+  </ul></div>
+</div>
+
+<div class="screenshot">
+  <div class="screenshot-header" id="ss8"><div class="screenshot-num">8</div><div class="screenshot-title">Success page after test payment</div></div>
+  <img class="screenshot-img" src="images/ss19_success.png" alt="Success page showing Starter plan placeholder">
+  <div class="screenshot-details"><ul>
+    <li><span class="tag tag-friction">Friction</span>Same issue as <a href="#ss6">#6</a>. I completed the test payment and landed on the success page. It says "Subscription to Starter plan successful!" - the sample app's placeholder. My customer just paid for "Premium Subscription" and landed on a page celebrating placeholder info.</li>
+  </ul></div>
+</div>
+
+<div class="screenshot">
+  <div class="screenshot-header" id="ss9"><div class="screenshot-num">9</div><div class="screenshot-title">Customer portal</div></div>
+  <img class="screenshot-img" src="images/ss20_portal.png" alt="Stripe customer portal showing Premium Subscription">
+  <div class="screenshot-details"><ul>
+    <li><span class="tag tag-positive">Delight</span>I clicked "Manage your billing information" and landed on the customer portal. Correct product name, $12.00/month, next billing date, cancel button, invoice history, payment method management. This looks exactly like what I need to ship to customers - and it's already built.</li>
+  </ul></div>
+</div>
+
+<div class="screenshot">
+  <div class="screenshot-header" id="ss10"><div class="screenshot-num">10</div><div class="screenshot-title"><a href="https://docs.stripe.com/billing/quickstart" target="_blank">Billing quickstart</a> - "Next steps"</div></div>
+  <img class="screenshot-img" src="images/ss05b_next_steps.png" alt="Quickstart Next steps section">
+  <div class="screenshot-details"><ul>
+    <li><span class="tag tag-friction">Friction</span>The sample app works on my laptop, but there's no guidance on getting from working demo to live product. "<a href="https://docs.stripe.com/billing/quickstart" target="_blank">Next steps</a>" lists subscription features (prorations, upsells) - not how to deploy, connect to my website, or go live. There's no mention that business verification is required before I can go live either, which I discovered later.</li>
+  </ul></div>
+</div>
+
+<div class="screenshot">
+  <div class="screenshot-header" id="ss11"><div class="screenshot-num">11</div><div class="screenshot-title">Setup guide complete + "Finish your setup"</div></div>
+  <img class="screenshot-img" src="images/ss13_setup_complete.png" alt="Setup guide complete">
+  <div class="screenshot-details"><ul>
+    <li><span class="tag tag-positive">Delight</span>I went back to the Dashboard and saw that I completed the setup guide. All four steps show green checkmarks. Completion feels real and satisfying.</li>
+    <li><span class="tag tag-friction">Friction</span>A new section appeared: "Finish your setup" with Verify your email, Verify your business, Create your Stripe profile. It looks like optional cleanup. I didn't realize this would block me from going live until I tried clicking on "Switch to live account."</li>
+  </ul></div>
+</div>
+
+<div class="screenshot">
+  <div class="screenshot-header" id="ss12"><div class="screenshot-num">12</div><div class="screenshot-title">Business verification - "Tell us about your business"</div></div>
+  <img class="screenshot-img" src="images/ss15_verification.png" alt="Business verification form">
+  <div class="screenshot-details"><ul>
+    <li><span class="tag tag-friction">Friction</span>I scrolled through the form. It asks for business representative, business owners, business directors, products or services, and public details. The one-line mention of "answer some questions" earlier didn't prepare me for a multi-section legal form.</li>
+  </ul></div>
+</div>
+
+<div class="screenshot">
+  <div class="screenshot-header" id="ss13"><div class="screenshot-num">13</div><div class="screenshot-title">Payment Links comparison</div></div>
+  <img class="screenshot-img" src="images/ss22a_payment_links_page.png" alt="Payment Links product page">
+  <img class="screenshot-img" src="images/ss22b_payment_links_dashboard.png" alt="Payment Links in Dashboard">
+  <img class="screenshot-img" src="images/ss22c_create_payment_link.png" alt="Create a Payment Link with live preview">
+  <div class="screenshot-details"><ul>
+    <li><span class="tag tag-neutral">Note</span>I thought back to the three options the setup guide showed me. I'd picked "Pre-built checkout form" - but since I couldn't go live yet anyway, I went to explore "shareable payment links."</li>
+    <li><span class="tag tag-friction">Friction</span>The <a href="https://stripe.com/en-ca/payments/payment-links" target="_blank">Payment Links product page</a> describes it as a way to accept payments "without a website." But the <a href="https://docs.stripe.com/payment-links" target="_blank">docs</a> say you can share it "on your website." I have a website - so is this for me or not?</li>
+    <li><span class="tag tag-positive">Delight</span>I clicked "Create a payment link" from the <a href="https://stripe.com/en-ca/payments/payment-links" target="_blank">product page</a>. It took me straight to my Dashboard with my Premium Subscription already there. I clicked it, saw a live preview of the checkout page - my product, my price - and could create a shareable link in one click.</li>
+    <li><span class="tag tag-positive">Delight</span>The preview shows the same Stripe-hosted checkout page I reached through the Checkout integration - same product, same payment methods. But this time I got here without downloading a sample app or running a local server.</li>
+    <li><span class="tag tag-friction">Friction</span>I just reached the same checkout page without any of the steps I went through before. But I still don't know if Payment Links would handle everything I need. What are the trade-offs? What does each option cover, and where does it stop? Nothing I encountered helped me answer that.</li>
+  </ul></div>
+</div>
+
+<hr>
+
+<h2>Summary</h2>
+<div class="summary">
+  <p><strong>I came in wanting to be live in one sitting.</strong> I went through the product page, setup guide, docs, and a sample app to reach a Stripe-hosted checkout page. Then I discovered Payment Links reaches the same page from the Dashboard - without running anything locally. Every hosted page I encountered got it right - my product data, payment methods, and customer portal all worked automatically.</p>
+  <p><strong>The friction isn't in the product. It's in the routing.</strong> After going through the entire Checkout setup and testing Payment Links, I still can't tell which option is right for my use case. The options appear in multiple places, but I never found a clear explanation of what each path handles and when I'd choose one over the other.</p>
+</div>
+
+</body>
+</html>
